@@ -1,0 +1,10 @@
+---
+- name: activity1
+  become: yes
+  hosts: all
+  tasks: 
+    - name: install apache on ubuntu
+      ansible.builtin.apt: 
+        name: apache2
+        state: present
+      
