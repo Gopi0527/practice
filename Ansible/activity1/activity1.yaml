@@ -5,6 +5,8 @@
   tasks: 
     - name: install apache on ubuntu
       ansible.builtin.apt: 
-        name: apache2
+        name: 
+          - apache2
         state: present
+        update_cache: yes
       
