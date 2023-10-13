@@ -75,7 +75,8 @@
         dest: "{{ service_file_path }}"
     - name: start the daemon service
       ansible.builtin.systemd:
+        name: tomcat
         daemon_reload: true
         enabled: true
         state: started
-        
+   
