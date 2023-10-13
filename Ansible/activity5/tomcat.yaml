@@ -1,0 +1,71 @@
+---
+- name: install tomcat
+  become: yes
+  hosts: appserver
+  vars:
+    shell: /bin/false
+    username: tomcat
+    groupname: tomcat
+    homedir: /opt/tomcat
+    tomcat_major_version: 10
+    tomcat_specific_version: 10.1.14
+    java_version: "11"
+  tasks: 
+    - name: install java11
+      ansible.builtin.apt:
+        name: "openjdk-{{ java_version }}-jdk"
+        update_cache: yes
+        state: present
+      when: ansible_facts["os_family"] == "Debian"
+    - name: install java11
+      ansible.builtin.dnf:
+        name: "openjdk-{{ java_version }}-jdk"
+        update_cache: yes
+        state: present
+      when: ansible_facts["os_family"] == "Debian"
+    - name: Ensure group "tomcat" exists
+      ansible.builtin.group:
+        name: "{{ groupname }}"
+        state: present
+    - name: create tomcat user
+      ansible.builtin.user:
+        name: "{{ username }}"
+        group: "{{ groupname }}"
+        home: "{{ homedir }}"
+        create_home: true
+        shell: "{{ shell }}"
+    - name: download the file
+      ansible.builtin.get_url:
+        url: "https://dlcdn.apache.org/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_specific_version }}/bin/apache-tomcat-{{ tomcat_specific_version }}.tar.gz"
+        dest: "/tmp/apache-tomcat-{{ tomcat_specific_version }}.tar.gz"
+    - name: Unarchive a file 
+      ansible.builtin.unarchive:
+        src: "/tmp/apache-tomcat-{{ tomcat_specific_version }}.tar.gz"
+        dest: "{{ homedir }}"
+        remote_src: true
+    - name: Create a symbolic link
+      ansible.builtin.file:
+        src: "{{ homedir }}/apache-tomcat-{{ tomcat_specific_version }}"
+        dest: "{{ homedir }}/latest"
+        owner: "{{ username }}"
+        group: "{{ groupname }}"
+        state: link
+    - name: give the file permissions 
+      ansible.builtin.file:
+        path: "{{ homedir }}"
+        owner: "{{ username }}"
+        group: "{{ groupname }}"
+        mode: '0755'
+    - name: get all the shell files
+      ansible.builtin.command: sudo sh -c 'ls /opt/tomcat/latest/bin/*.sh'
+      register: shell_files
+    - name: print the value
+      ansible.builtin.debug:
+        var: shell_files
+    - name: add execute permission
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: "{{ username }}"
+        group: "{{ groupname }}"
+        mode: "0751"
+      loop: "{{ shell_files.stdout_lines }}"

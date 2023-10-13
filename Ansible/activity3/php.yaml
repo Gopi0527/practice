@@ -1,0 +1,28 @@
+---
+- name: php on redhat
+  become: yes
+  hosts: all
+  tasks:
+    - name: install php page in redhat machine
+      ansible.builtin.dnf:
+        name:
+          - httpd
+          - php
+          - php-cli
+          - php-common
+          - php-gd
+          - php-mysqlnd
+          - php-pdo
+        state: present
+        update_cache: yes
+
+    - name: create a info.php page
+      ansible.builtin.copy:
+        content: '<?php phpinfo(); ?>'
+        dest: /var/www/html/info.php
+
+    - name: run the httpd service
+      ansible.builtin.service:
+        name: httpd
+        enabled: yes
+        state: started
