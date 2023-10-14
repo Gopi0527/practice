@@ -79,7 +79,7 @@
       loop: "{{ shell_files.stdout_lines }}"
     - name: to create a template for service file
       ansible.builtin.template:
-        src: templet/tomcat.j2
+        src: template/tomcat.j2
         dest: /etc/systemd/system/tomcat.service
     - name: To start the daemon service
       ansible.builtin.systemd:
